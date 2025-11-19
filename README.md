@@ -223,3 +223,31 @@ Backend base: `http://127.0.0.1:8001/api`
 
 - Frontend proxy target is set in `client/vite.config.js` under `server.proxy['/api'].target`.
 - If you change backend port, update the proxy target and restart `npm run dev`.
+
+## Why an API for this Todo App
+
+- Separation of concerns: the React client handles UI/UX, while the FastAPI backend owns data, validation, and business logic. This keeps each part focused and easier to maintain.
+- Persistence and reliability: the backend writes to `server/data/todos.json` (and could be swapped to a database later) so data survives page reloads and multiple users.
+- Consistent interface: the client calls stable HTTP endpoints rather than manipulating files or in-memory state directly.
+- Multi-client support: web app, mobile app, CLI, or automations can all use the same API.
+- Security and validation: inputs are checked server-side; you can add auth, rate limiting, and auditing without changing the UI.
+- Evolvability: you can version endpoints, change storage engines, or scale the backend independently from the frontend.
+- Testability: endpoints can be unit/integration tested; client and server can be tested separately.
+
+## What is an API (in this project)
+
+- Definition: an Application Programming Interface is a contract that defines how software components talk to each other. Here it’s an HTTP/JSON API exposed by FastAPI.
+- Endpoints: the backend exposes routes under `/api` used by the client via the Vite proxy.
+  - `GET /api/health` → checks service status.
+  - `GET /api/todos` → lists todos.
+  - `POST /api/todos` → creates a todo with `{"title": "..."}`.
+  - `GET /api/todos/{id}` → returns a single todo.
+  - `PUT /api/todos/{id}` → updates fields (e.g., `{"title": "...", "completed": true}`).
+  - `DELETE /api/todos/{id}` → removes a todo.
+  - `PATCH /api/todos/{id}/toggle` → flips `completed`.
+- How the client uses it:
+  - The React client calls `"/api/..."` paths; Vite’s proxy forwards to the backend on port `8001`.
+  - Example create call:
+    - Request: `POST /api/todos` with body `{"title":"Buy milk"}`
+    - Response: `{ "id": "uuid", "title": "Buy milk", "completed": false }`
+- Decoupling benefit: you can replace `todos.json` with PostgreSQL or add authentication without changing `client/src/api.js` call signatures.
