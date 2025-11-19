@@ -25,6 +25,19 @@ app.include_router(todos.router, prefix="/api", tags=["todos"])
 def health():
     return {"status": "ok"}
 
+@app.get("/api")
+@app.get("/api/")
+def api_root():
+    return {"status": "ok", "endpoints": ["/api/health", "/api/todos"]}
+
+@app.on_event("startup")
+async def on_startup():
+    print("api is running")
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "Todo API", "paths": ["/api", "/api/health", "/api/todos", "/docs"]}
+
 
 if __name__ == "__main__":
     import uvicorn
